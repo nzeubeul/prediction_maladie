@@ -1,0 +1,15 @@
+CELL 63 markdown
+'# Visualisation comparative'
+---
+CELL 64 code
+"fig, axes = plt.subplots(1, 2, figsize=(14, 5))\n\n# --- Graphe 1 : Accuracy par classe ---\nreport_rf  = classification_report(y_test, y_pred_rf,  target_names=CLASS_NAMES, output_dict=True)\nreport_xgb = classification_report(y_test, y_pred_xgb, target_names=CLASS_NAMES, output_dict=True)\n\nf1_rf  = [report_rf[c]['f1-score']  for c in CLASS_NAMES]\nf1_xgb = [report_xgb[c]['f1-score'] for c in CLASS_NAMES]\n\nx    = np.arange(len(CLASS_NAMES))\nw    = 0.35\nax   = axes[0]\nax.bar(x - w/2, f1_rf,  w, label='Random Forest',   color='steelblue',  alpha=0.85)\nax.bar(x + w/2, f1_xgb, w, label='Gradient Boost',  color='darkorange', alpha=0.85)\nax.set_xticks(x)\nax.set_xticklabels(CLASS_NAMES, rotation=35, ha='right', fontsize=8)\nax.set_ylim(0.7, 1.05)\nax.set_ylabel('F1-Score')\nax.set_title('F1-Score par classe')\nax.legend()\nax.axhline(1.0, color='gray', linewidth=0.8, linestyle='--')\n\n# --- Graphe 2 : CV scores par fold ---\nax2 = axes[1]\nfolds = [f'Fold {i}' for i in range(1, 6)]\nax2.plot(folds, cv_rf,  'o-', color='steelblue',  label=f'Random Forest  (moy={cv_rf.mean():.3f})',  linewidth=2)\nax2.plot(folds, cv_xgb, 's-', color='darkorange', label=f'Gradient Boost (moy={cv_xgb.mean():.3f})', linewidth=2)\nax2.set_ylim(0.88, 1.01)\nax2.set_ylabel('Accuracy')\nax2.set_title('Validation croisée — 5 folds')\nax2.legend()\nax2.fill_between(folds, cv_rf  - cv_rf.std(),  cv_rf  + cv_rf.std(),  alpha=0.15, color='steelblue')\nax2.fill_between(folds, cv_xgb - cv_xgb.std(), cv_xgb + cv_xgb.std(), alpha=0.15, color='darkorange')\n\nplt.suptitle('Comparaison Random Forest vs Gradient Boosting (XGBoost)', fontsize=13, fontweight='bold')\nplt.tight_layout()\nplt.show()"
+---
+CELL 65 markdown
+'# Récapitulatif final'
+---
+CELL 66 code
+'best_model = \'Random Forest\' if acc_rf >= acc_xgb else \'Gradient Boosting\'\nbest_acc   = max(acc_rf, acc_xgb)\n\nprint("=" * 55)\nprint("  RÉSUMÉ — ENTRAÎNEMENT DES MODÈLES")\nprint("=" * 55)\nprint(f"  Random Forest       → Accuracy : {acc_rf:.4f} ({acc_rf*100:.2f}%)")\nprint(f"  Gradient Boost(XGB) → Accuracy : {acc_xgb:.4f} ({acc_xgb*100:.2f}%)")\nprint()\nprint(f"  Meilleur modèle  : {best_model}")\nprint(f"    Accuracy test    : {best_acc:.4f}")\nprint()\nprint("  Top 3 features (Random Forest) :")\nfor feat, imp in importances.head(3).items():\n    print(f"    → {feat:<28} {imp:.4f}")\nprint("=" * 55)\nprint(" Modèles entraînés — prêts pour l\'évaluation.")'
+---
+CELL 67 code
+''
+---

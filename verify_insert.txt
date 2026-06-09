@@ -1,0 +1,15 @@
+CELL 65 markdown
+'# Récapitulatif final'
+---
+CELL 66 code
+'best_model = \'Random Forest\' if acc_rf >= acc_xgb else \'Gradient Boosting\'\nbest_acc   = max(acc_rf, acc_xgb)\n\nprint("=" * 55)\nprint("  RÉSUMÉ — ENTRAÎNEMENT DES MODÈLES")\nprint("=" * 55)\nprint(f"  Random Forest       → Accuracy : {acc_rf:.4f} ({acc_rf*100:.2f}%)")\nprint(f"  Gradient Boost(XGB) → Accuracy : {acc_xgb:.4f} ({acc_xgb*100:.2f}%)")\nprint()\nprint(f"  Meilleur modèle  : {best_model}")\nprint(f"    Accuracy test    : {best_acc:.4f}")\nprint()\nprint("  Top 3 features (Random Forest) :")\nfor feat, imp in importances.head(3).items():\n    print(f"    → {feat:<28} {imp:.4f}")\nprint("=" * 55)\nprint(" Modèles entraînés — prêts pour l\'évaluation.")'
+---
+CELL 67 markdown
+'# Test patient : prédiction par symptômes\nLe patient sélectionne ses symptômes. Si le profil correspond à une maladie précise, le résultat affiche cette maladie.\nSinon, le notebook affiche les maladies les plus probables avec leurs pourcentages.\nLe patient souffrira probablement de la maladie avec le pourcentage le plus élevé.\n'
+---
+CELL 68 code
+'symptomes_test = symptomes\nprint("Symptômes disponibles :")\nprint(" - " + "\n - ".join(symptomes_test))\n\nselected_symptoms = [\n    "Fievre",\n    "Céphalées",\n    "Douleur_Lombaire"\n]\npatient_input = pd.DataFrame([{s: int(s in selected_symptoms) for s in symptomes_test}])\nprint("\nSymptômes sélectionnés :", selected_symptoms)\n\nexact_matches = df_final[df_final[symptomes_test].eq(patient_input.iloc[0]).all(axis=1)]\nif len(exact_matches) > 0:\n    exact_counts = exact_matches["Diagnostic_Final"].value_counts(normalize=True) * 100\n    if len(exact_counts) == 1:\n        print(f"\nCorrespondance exacte trouvée : {exact_counts.index[0]} ({exact_counts.iloc[0]:.1f}%)")\n    else:\n        print("\nCorrespondances exactes avec plusieurs diagnostics :")\n        for diag, pct in exact_counts.items():\n            print(f"  - {diag} : {pct:.1f}%")\n        print(f"\nLe patient souffrira probablement de : {exact_counts.index[0]} ({exact_counts.iloc[0]:.1f}%)")\nelse:\n    model = rf_model if acc_rf >= acc_xgb else xgb_model\n    probs = model.predict_proba(patient_input)[0]\n    order = np.argsort(probs)[::-1]\n    disease_names = le.inverse_transform(model.classes_.astype(int))[order]\n    top_probs = probs[order] * 100\n    print("\nAucune correspondance exacte. Maladies probables :")\n    for name, pct in zip(disease_names[:5], top_probs[:5]):\n        print(f"  - {name} : {pct:.1f}%")\n    print(f"\nLe patient souffrira probablement de : {disease_names[0]} ({top_probs[0]:.1f}%)")\n'
+---
+CELL 69 code
+''
+---
